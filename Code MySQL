@@ -1,0 +1,112 @@
+
+CREATE DATABASE IF NOT EXISTS UltraV
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_unicode_ci;
+
+USE UltraV;
+
+CREATE TABLE Cliente (
+    id_cliente  INT          PRIMARY KEY AUTO_INCREMENT,
+    nome        VARCHAR(100) NOT NULL,
+    cpf         VARCHAR(14)  UNIQUE,
+    telefone    VARCHAR(20),
+    email       VARCHAR(100)
+);
+
+CREATE TABLE Endereco (
+    id_endereco INT          PRIMARY KEY AUTO_INCREMENT,
+    id_cliente  INT          NOT NULL,
+    rua         VARCHAR(150),
+    numero      VARCHAR(10),
+    bairro      VARCHAR(100),
+    cidade      VARCHAR(100),
+    estado      VARCHAR(50),
+    cep         VARCHAR(10),
+    complemento VARCHAR(100),
+    CONSTRAINT fk_end_cliente
+        FOREIGN KEY (id_cliente) REFERENCES Cliente(id_cliente)
+);
+
+CREATE TABLE Receita (
+    id_receita          INT          PRIMARY KEY AUTO_INCREMENT,
+    id_cliente          INT          NOT NULL,
+    data_receita        DATE,
+    grau_esferico_od    DECIMAL(4,2),
+    grau_cilindrico_od  DECIMAL(4,2),
+    eixo_od             INT,
+    grau_esferico_oe    DECIMAL(4,2),
+    grau_cilindrico_oe  DECIMAL(4,2),
+    eixo_oe             INT,
+    CONSTRAINT fk_rec_cliente
+        FOREIGN KEY (id_cliente) REFERENCES Cliente(id_cliente)
+);
+
+CREATE TABLE Armacao (
+    id_armacao INT           PRIMARY KEY AUTO_INCREMENT,
+    modelo     VARCHAR(100),
+    marca      VARCHAR(100),
+    cor        VARCHAR(50),
+    preco      DECIMAL(10,2),
+    estoque    INT
+);
+
+CREATE TABLE Lente (
+    id_lente INT           PRIMARY KEY AUTO_INCREMENT,
+    tipo     VARCHAR(100),
+    material VARCHAR(100),
+    preco    DECIMAL(10,2)
+);
+
+CREATE TABLE Carrinho (
+    id_carrinho  INT          PRIMARY KEY AUTO_INCREMENT,
+    id_cliente   INT          NOT NULL,
+    data_criacao DATETIME,
+    status       VARCHAR(20),
+    CONSTRAINT fk_car_cliente
+        FOREIGN KEY (id_cliente) REFERENCES Cliente(id_cliente)
+);
+
+CREATE TABLE ItemCarrinho (
+    id_item     INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    id_carrinho INT NOT NULL,
+    id_armacao  INT,
+    id_lente    INT,
+    quantidade  INT,
+    CONSTRAINT fk_ic_carrinho
+        FOREIGN KEY (id_carrinho) REFERENCES Carrinho(id_carrinho),
+    CONSTRAINT fk_ic_armacao
+        FOREIGN KEY (id_armacao)  REFERENCES Armacao(id_armacao),
+    CONSTRAINT fk_ic_lente
+        FOREIGN KEY (id_lente)    REFERENCES Lente(id_lente)
+);
+
+CREATE TABLE Venda (
+    id_venda      INT           PRIMARY KEY AUTO_INCREMENT,
+    id_cliente    INT           NOT NULL,
+    id_receita    INT,
+    id_endereco   INT,
+    data_venda    DATETIME,
+    valor_total   DECIMAL(10,2),
+    tipo_entrega  VARCHAR(20),
+    CONSTRAINT fk_ven_cliente
+        FOREIGN KEY (id_cliente)  REFERENCES Cliente(id_cliente),
+    CONSTRAINT fk_ven_receita
+        FOREIGN KEY (id_receita)  REFERENCES Receita(id_receita),
+    CONSTRAINT fk_ven_endereco
+        FOREIGN KEY (id_endereco) REFERENCES Endereco(id_endereco)
+);
+
+CREATE TABLE ItemVenda (
+    id_item        INT           PRIMARY KEY AUTO_INCREMENT,
+    id_venda       INT           NOT NULL,
+    id_armacao     INT,
+    id_lente       INT,
+    quantidade     INT,
+    preco_unitario DECIMAL(10,2),
+    CONSTRAINT fk_iv_venda
+        FOREIGN KEY (id_venda)    REFERENCES Venda(id_venda),
+    CONSTRAINT fk_iv_armacao
+        FOREIGN KEY (id_armacao)  REFERENCES Armacao(id_armacao),
+    CONSTRAINT fk_iv_lente
+        FOREIGN KEY (id_lente)    REFERENCES Lente(id_lente)
+);
